@@ -1,0 +1,132 @@
+\chapter{并发编程}
+
+\begin{enumerate}
+  \item \textbf{并发}（Concurrent）：即使只有一个CPU也可以交替执行多个任务。
+  \item \textbf{并行}（Parallel）：需要有多个CPU支持。
+\end{enumerate}
+
+\section{多进程}
+
+进程是操作系统分配资源的最小单元。我们可以使用多个进程的方式来实现并发。
+
+比如nginx就是使用这种模式，nginx启动一个master进程和多个的worker进程，master进程
+只有一些简单的逻辑，主要的业务处理逻辑都交给worker进程去处理。这么做的好处也很明
+显，如果某个worker进程挂掉了，不会对其他的worker进程有任何影响，master进程会监控
+到这种情况，然后重新启动一个worker进程。所以采用多进程的方式来实现，程序还是非常
+健壮的。
+
+但是，要是用错了多进程的方式，效率估计就非常的低了。比如说要是客户端的每一个请
+求，都新开一个进程，那估计并发的数量是很难超过1000的。
+
+\section{多线程}
+
+线程是操作系统调度的最小单元。多线程是最常用的实现并发的一种方式。进程一运行起来
+就至少有一个主线程，如果要用多个线程，需要用创建线程的接口来创建多个线程。多个线
+程之间共享进程中的数据。这样如果有多个线程对同一个数据有读写冲突，就需要加锁来保
+护数据的一致性。或者使用原子变量。还可以使用消息队列在线程之间共享数据。
+
+下面给出一个C++11中的多线程代码示例：
+
+\begin{verbatim}
+// Copyright (c) 2021 by HuangJian
+//
+// g++ thread1.cpp -lpthread -std=c++11 -o a.out
+
+#include <iostream>
+#include <thread>
+
+using namespace std;
+
+int main() {
+  auto f = []() { cout << "tid=" << this_thread::get_id() << endl; };
+  thread t1(f);
+  t1.join();
+  return 0;
+}
+\end{verbatim}
+
+但是，多线程和多进程一样，如果每个客户端请求都新开一个线程的话，并发量也是非常低
+的。另外，一个线程如果挂掉了，整个进程都会挂掉，这个问题不知道能不能用捕获异常来
+解决。
+
+\section{协程}
+
+C++20里面才正式加入了协程，所以在C++11里面就只能用第三方库了。协程是用户态的线
+程，协程的开销远远小于线程，所以协程可以每个客户端请求都新开一个协程，非常好，可
+惜C++11用不了。
+
+\section{锁}
+
+\subsection{互斥锁}
+
+\begin{verbatim}
+#include <iostream>  // std::cout
+#include <mutex>     // std::mutex
+#include <thread>    // std::thread
+
+std::mutex mtx;  // mutex for critical section
+
+void print_block(int n, char c) {
+  mtx.lock();
+  for (int i = 0; i < n; ++i) {
+    std::cout << c;
+  }
+  std::cout << '\n';
+  mtx.unlock();
+}
+
+int main() {
+  std::thread th1(print_block, 50, '*');
+  std::thread th2(print_block, 50, '$');
+  th1.join();
+  th2.join();
+  return 0;
+}
+\end{verbatim}
+
+\subsection{自旋锁}
+
+自旋锁和互斥锁有些区别，自旋锁在无法立即获取到锁的时候，不会立马退出运行态，会一
+直处于运行态占用CPU，直到获取到锁为止。这样会更快获取到锁，但是会占用更多的CPU资
+源。在你不确定要用互斥锁还是自旋锁的时候，那就使用互斥锁。在现代的操作系统中，互
+斥锁的实现很多时候在加锁之前如果获取不到锁，也是会自旋一小会。所以在你需要使用自
+旋锁的时候，需要具体测试性能。
+
+\section{原子变量}
+
+\subsection{memory\_order}
+
+\begin{enumerate}
+  \item memory\_order\_relaxed
+  \item memory\_order\_consume
+  \item memory\_order\_acquire
+  \item memory\_order\_release
+  \item memory\_order\_acq\_rel
+  \item memory\_order\_seq\_cst
+\end{enumerate}
+
+https://en.cppreference.com/w/cpp/atomic/memory\_order
+
+\section{内存屏障}
+
+\textbf{内存屏障}（英语：Memory barrier），也称内存栅栏，内存栅障，屏障指令等，
+是一类同步屏障指令，它使得 CPU 或编译器在对内存进行操作的时候, 严格按照一定的顺
+序来执行,也就是说在memory barrier 之前的指令和memory barrier之后的指令不会由于系
+统优化等原因而导致乱序。
+
+为啥需要内存屏障呢？大多数现代计算机为了提高性能而采取乱序执行，这使得内存屏障成
+为必须。
+
+大多数处理器提供了内存屏障指令:
+
+\begin{enumerate}
+  \item 完全内存屏障(full memory barrier)保障了早于屏障的内存读写操作的结果提交
+    到内存之后，再执行晚于屏障的读写操作。
+  \item 内存读屏障(read memory barrier)仅确保了内存读操作；
+  \item 内存写屏障(write memory barrier)仅保证了内存写操作。
+\end{enumerate}
+
+https://en.wikipedia.org/wiki/Memory\_barrier \\
+https://en.wikipedia.org/wiki/Out-of-order\_execution \\
+https://www.kernel.org/doc/Documentation/memory-barriers.txt
+

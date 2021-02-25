@@ -1,0 +1,241 @@
+\chapter{C++11/14介绍}
+
+\section{C++14}
+
+\subsection{Binary literals}
+
+可以在代码中使用二进制数值。
+
+\begin{verbatim}
+// clang binary_literals.cpp -lstdc++
+#include <iostream>
+using namespace std;
+int main() {
+  int a = 0b110;  // 6
+  cout << "a = " << a << endl;
+  int b = 0b1111'1111; // 255
+  cout << "b = " << b << endl;
+  return 0;
+}
+\end{verbatim}
+
+\subsection{Generic lambda expressions}
+
+在 lambda 的参数中可以使用泛型。
+
+\begin{verbatim}
+auto identity = [](auto x) { return x; };
+int three = identity(3);
+string foo = identity("foo");
+\end{verbatim}
+
+\subsection{Lambda capture initializers}
+
+在 lambda 声明的时候就计算好参数中的表达式的值。
+
+\begin{verbatim}
+int factory(int i) { return i * 10; }
+auto f = [x = factory(2)] { return x; };
+cout << "f() = " << f() << endl; // 20
+\end{verbatim}
+
+\begin{verbatim}
+auto generator = [x = 0]() mutable { return x++; };
+auto a = generator();
+auto b = generator();
+auto c = generator();
+cout << "a = " << a << endl; // 0
+cout << "b = " << b << endl; // 1
+cout << "c = " << c << endl; // 2
+\end{verbatim}
+
+可以把 unique\_ptr move 到 lambda 中。
+
+\begin{verbatim}
+auto p = std::make_unique<int>(1);
+// auto task = [=] { *p = 5; }; // error
+auto task = [p = std::move(p)] { *p = 5; }; // ok
+\end{verbatim}
+
+捕获的变量可以重命名。
+
+\begin{verbatim}
+auto x = 1;
+auto f = [& r = x, x = x * 10] {
+  ++r;
+  return r + x;
+};
+cout << "f() = " << f() << endl; // 12
+\end{verbatim}
+
+\subsection{Return type deduction}
+
+返回值自动推断。
+
+\begin{verbatim}
+auto f(int i) { return i; }
+
+template <typename T>
+auto& f(T& t) {
+  return t;
+}
+
+auto h = [](auto& x) -> auto& { return f(x); };
+\end{verbatim}
+
+\subsection{decltype auto}
+
+decltype(auto) 和 auto 很像，但是有些区别。decltype(auto) 会保留 const 和引用，
+而 auto 不会。
+
+\begin{verbatim}
+const int x = 0;
+auto x1 = x;            // int
+decltype(auto) x2 = x;  // const int
+
+int y = 0;
+int& y1 = y;
+auto y2 = y1;            // int
+decltype(auto) y3 = y1;  // int&
+
+int&& z = 0;
+auto z1 = std::move(z);            // int
+decltype(auto) z2 = std::move(z);  // int&&
+\end{verbatim}
+
+作为返回值也是一样的。
+
+\begin{verbatim}
+// Return type is `int`.
+auto f(const int& i) { return i; }
+
+// Return type is `const int&`.
+decltype(auto) g(const int& i) { return i; }
+\end{verbatim}
+
+\subsection{constexpr}
+
+constexpr函数在C++14中支持更多的语法。
+
+\begin{verbatim}
+constexpr int factorial(int n) {
+  if (n <= 1) {
+    return 1;
+  } else {
+    return n * factorial(n - 1);
+  }
+}
+\end{verbatim}
+
+\subsection{variable templates}
+
+\begin{verbatim}
+template <class T>
+constexpr T pi = T(3.1415926535897932385);
+
+template <class T>
+constexpr T e = T(2.7182818284590452353);
+\end{verbatim}
+
+\subsection{deprecated attribute}
+
+被 deprecated 标记的函数如果被调用了，编译的时候会有警告。
+
+\begin{verbatim}
+[[deprecated]]
+void old_method() {}
+
+[[deprecated("Use new_method instead")]]
+void legacy_method() {}
+\end{verbatim}
+
+\section{C++11}
+
+C++11新增的东西很多，建议阅读<<C++ Primer>>和罗剑锋的C++实战笔记。
+
+C++11之前，每个模块基本上是一个h和一个cpp文件。C++11有一个种新的风格，就是把h文
+件和cpp文件合并在一起，叫做hpp文件。我觉得还挺好的，申明和定义放一起，不用到处找。
+
+\begin{verbatim}
+namespace demo_cpp11 {  // 命名空间，全小写
+
+// using 别名
+// typedef unsigned int uint_t; // 等价的 typedef
+using uint_t = unsigned int;
+
+// 常量，全大写
+#define MAX_PATH_LEN 256
+
+// 常量，全大写
+const int BUFF_SIZE = 4096;
+
+// 全局变量用 g_ 作为前缀
+int g_count = 0;
+
+/*
+@brief DemoCpp11 C++11最佳实践示范类。
+1. 给类添加 final，防止被继承。
+2. 现在每个类都有 6 个默认函数：
+ 2.1 默认构造函数
+ 2.2 默认析构函数
+ 2.3 默认拷贝构造函数
+ 2.4 默认拷贝赋值函数
+ 2.5 默认转移构造函数
+ 2.6 默认转移赋值函数
+可以通过 `= default` 来明确使用默认实现。
+可以通过 `= delete` 来明确禁用默认实现。
+3. 使用 explicit 来防止一些隐式转换。
+4. 可以使用代理构造函数来简化代码。
+5. 成员变量声明的时候可以直接初始化。
+6. 使用 const 来修饰常函数。
+7. 使用 using 来定义类型别名。
+8. 类名使用 CamelCase，函数和变量用 snake_case，成员变量加 m_ 前缀
+*/
+class DemoCpp11 final {  // 添加 final，类就没法被继承了。
+ public:
+  using this_type = DemoCpp11;      // 给自己也起个别名
+  using string_type = std::string;  // 字符串类型别名
+  using set_type = std::set<int>;   // 集合类型别名
+
+ public:
+  DemoCpp11() = default;   // 明确告诉编译器，使用默认实现
+  ~DemoCpp11() = default;  // 明确告诉编译器，使用默认实现
+
+  DemoCpp11(const DemoCpp11&) = delete;             // 禁止拷贝构造函数
+  DemoCpp11& operator=(const DemoCpp11&) = delete;  // 禁止拷贝赋值函数
+
+  DemoCpp11(DemoCpp11&& s) = default;             // 显式转移构造函数
+  DemoCpp11& operator=(DemoCpp11&& s) = default;  // 显式转移赋值函数
+
+  explicit DemoCpp11(int id) : m_id(id) {}  // 显式单参构造函数
+  explicit operator bool();                 // 显式转型为bool
+
+  // 代理构造函数
+  explicit DemoCpp11(const std::string& id)  // 字符串参数构造函数
+      : DemoCpp11(stoi(id)) {}  // 转换成整数，再委托给另一个构造函数
+
+  // 添加 const 修饰常函数
+  // 函数名，全部小写
+  int get_id() const { return m_id; }
+
+  // 函数名，全部小写
+  void show_demo() const {
+    // 局部变量，全部小写
+    int local_variable = 123;
+    std::cout << "local_variable = " << local_variable << std::endl;
+    std::cout << "m_id = " << m_id << std::endl;
+    std::cout << "m_name = " << m_name << std::endl;
+  }
+
+ private:
+  /*
+  成员变量，用 m_ 作为前缀，全部小写
+  */
+  int m_id = 0;                      // 整数成员，赋值初始化
+  std::string m_name = "democpp11";  // 字符串成员，赋值初始化
+  std::vector<int> m_friends{1, 2, 3};  // 容器成员，使用花括号的初始化列表
+};
+
+} // namespace demo_cpp11
+\end{verbatim}
+

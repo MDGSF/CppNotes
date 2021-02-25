@@ -1,0 +1,145 @@
+\chapter{消息队列}
+
+\section{redis}
+
+redis提供了发布订阅模式。所以可以借助redis在不同的进程之间通信。redis多用于服务
+器上，不过redis是纯C语言编写的，所以很容易迁移到嵌入式上运行。
+
+https://redis.io/topics/pubsub
+
+\section{nanomsg}
+
+nanomsg 是一个纯C语言编写的网络通信库，提供了几种常用的通信模式：
+
+\begin{enumerate}
+  \item Pipeline (A One-Way Pipe)
+  \item Request/Reply (I ask, you answer)
+  \item Pair (Two Way Radio)
+  \item Pub/Sub (Topics \& Broadcast)
+  \item Survey (Everybody Votes)
+  \item Bus (Routing)
+\end{enumerate}
+
+\subsection{Pipeline}
+
+https://nanomsg.org/gettingstarted/pipeline.html
+
+Push作为客户端，Pull作为服务器端。
+Push只发送消息。Pull只接收来自Push的消息。
+
+\begin{verbatim}
+   Client                       Server
++--------+                   +--------+
+|  Push  +--------+--------->+  Pull  |
++--------+        |          +--------+
+                  |
++--------+        |
+|  Push  +--------+
++--------+
+\end{verbatim}
+
+\subsection{Request/Reply}
+
+https://nanomsg.org/gettingstarted/reqrep.html
+
+Request作为客户端，Response作为服务器端。
+Response收到一个消息，就要回复一个消息。同步式的一问一答。
+
+\begin{verbatim}
+   Client                       Server
++--------+                   +--------+
+|  Req   +<-------+--------->+  Rep   |
++--------+                   +--------+
+\end{verbatim}
+
+\subsection{Pair}
+
+https://nanomsg.org/gettingstarted/pair.html
+
+其中任意一个节点作为服务器端，另一个节点作为客户端。
+两个端点都可以任意收发数据。就像普通的全双工通信一样。
+
+\begin{verbatim}
+   Client                       Server
++--------+                   +--------+
+| node0  +<-------+--------->+ node1  |
++--------+                   +--------+
+\end{verbatim}
+
+\subsection{Pub/Sub}
+
+https://nanomsg.org/gettingstarted/pubsub.html
+
+Publish作为服务器端，可以有任意多个Subscribe。
+Publish只负责发送数据，Subscribe只负责读取数据。
+消息过滤实在Subscribe端处理的。
+
+\begin{verbatim}
++--------+                    +--------+
+| Client |                    | Client |
++---+----+                    +---+----+
+    ^                             ^
+    |        +----------+         |
+    +--------+  Server  +---------+
+             +----+-----+
+                  |
+                  |
+             +----v---+
+             | Client |
+             +--------+
+\end{verbatim}
+
+\subsection{Survey}
+
+https://nanomsg.org/gettingstarted/survey.html
+
+Surveyor作为服务器端，可以有多个客户端。
+由Surveyor发起投票，然后Surveyor会在一定的时间内等待来自客户端的消息。
+
+\begin{verbatim}
++--------+                    +--------+
+| Client |                    | Client |
++---+----+                    +---+----+
+    ^                             ^
+    |        +----------+         |
+    +------->+  Server  +<--------+
+             +----+-----+
+                  ^
+                  |
+             +----v---+
+             | Client |
+             +--------+
+\end{verbatim}
+
+\subsection{Bus}
+
+https://nanomsg.org/gettingstarted/bus.html
+
+在Bus模式下，每个节点都是既作为服务器端又同时作为客户端，每个节点都互相连接。
+
+\begin{verbatim}
++------+          +------+
+| node <----------> node |
++---^--+          +--^---+
+    |                |
+    |                |
+    |                |
++---v--+             |
+| node <-------------+
++------+
+\end{verbatim}
+
+\section{libflow}
+
+libflow是用C++写的网络通信库，支持发布订阅模式，底层支持TCP、UDP通信。
+
+\section{dds}
+
+dds 是基于共享内存的本地通信库，支持发布订阅模式。
+
+\section{workflow}
+
+https://github.com/sogou/workflow
+
+workflow是搜狗公司的C++服务器引擎。
+

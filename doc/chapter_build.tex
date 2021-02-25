@@ -1,0 +1,39 @@
+\chapter{编译命令}
+
+gcc和clang默认是用来编译C语言的。
+g++和clang++默认用来编译C++的。
+
+指定启用哪个版本的C++语法：
+\begin{enumerate}
+  \item -std=c++98
+  \item -std=c++11
+  \item -std=c++14
+  \item -std=c++17
+  \item -std=c++20
+\end{enumerate}
+
+\section{g++编译命令}
+
+\begin{verbatim}
+g++ main.cpp
+g++ main.cpp -std=c++11
+g++ main.cpp -std=c++11 -o a.out
+g++ main.cpp -lpthread -std=c++11 -o a.out
+\end{verbatim}
+
+\section{clang++编译命令}
+
+\begin{verbatim}
+clang++ main.cpp
+clang++ main.cpp -std=c++11
+\end{verbatim}
+
+\section{clang编译命令}
+
+clang用来编译C++需要链接stdc++文件。
+
+\begin{verbatim}
+clang main.cpp -lstdc++
+clang main.cpp -std=c++11 -lstdc++
+\end{verbatim}
+

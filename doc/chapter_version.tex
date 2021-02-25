@@ -1,0 +1,42 @@
+\chapter{C++,GCC,Clang版本}
+
+C++是一门编程语言，它有很多个编译器，最出名的编译器有3个，分别是：
+\textbf{GCC}，\textbf{Clang}和\textbf{MSVC}。\textbf{GCC}用在UNIX类的操作系统。
+\textbf{MSVC}是Windows下的编译器，安装了Visial Studio之后就自动安装好了对应的
+\textbf{MSVC}编译器。\textbf{Clang}是跨平台的，支持好多平台。如果是作服务端开发
+的话，就用比较新的版本就可以了。如果是做嵌入式开发的话，一般也没有得选，只能用嵌
+入式自带的交叉编译工具链。
+
+\section{C++版本}
+
+\begin{enumerate}
+  \item C++98，1998年
+  \item C++11，2011年
+  \item C++14，2014年
+  \item C++17，2017年
+  \item C++20，2020年
+  \item C++23，2023年
+\end{enumerate}
+
+\section{GCC版本}
+
+\begin{enumerate}
+  \item C++98，所有的GCC版本都实现了C++98的特性。
+    GCC6.1之前的默认模式。-std=c++98
+  \item C++11，GCC4.8.1之后的版本才有C++11的全部特性。-std=c++11
+  \item C++14，GCC6.1之后的默认模式。-std=c++14
+  \item C++17，GCC5之后的版本，GCC11之后的默认模式。-std=c++17
+  \item C++20，GCC8之后的版本。
+  \item C++23，GCC11之后的版本。
+\end{enumerate}
+
+\section{Clang版本}
+
+\begin{enumerate}
+  \item C++98，所有的clang版本都实现了C++98的特性。
+  \item C++11，clang3.3之后的版本。
+  \item C++14，clang3.4之后的版本。
+  \item C++17，clang5之后的版本。
+  \item C++20，clang9之前（包括）加-std=c++2a，之后加-std=c++20
+\end{enumerate}
+
