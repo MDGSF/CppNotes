@@ -1,6 +1,7 @@
 sub_dirs=cpp11 \
 				 cpp14 \
-				 mutex
+				 mutex \
+				 thread
 
 sub_builds=$(addprefix build_,$(sub_dirs))
 sub_cleans=$(addprefix clean_,$(sub_dirs))
