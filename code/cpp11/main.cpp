@@ -7,9 +7,11 @@
 using namespace std;
 using namespace demo_cpp11;
 
-int main() {
+int main() try {
   DemoCpp11 demo = DemoCpp11(1024);
   cout << demo.get_id() << endl;
   demo.show_demo();
   return 0;
+} catch (std::exception& e) {
+  std::cerr << e.what() << std::endl;
 }
